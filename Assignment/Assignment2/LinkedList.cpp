@@ -2,7 +2,7 @@ struct ListNode{
 	int label;
 	ListNode* next, *arbit;
 	ListNode(int l) : label(l), next(NULL), arbit(NULL) {}
-} 
+};
 //Q1
 //we can also use dfs to solve this, but it is not a O(n) time solution.
 ListNode* copyList(ListNode* head){
