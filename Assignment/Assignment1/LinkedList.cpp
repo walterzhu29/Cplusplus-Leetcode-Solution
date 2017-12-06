@@ -5,10 +5,9 @@ public:
 	node(int v) val(v), next(NULL) {}
 };
 //Q1
-node* reverseLinkedList(node* head, int k) {
+node* helper(node* head, node* prev,int k){
 	if (!head || !k)
 		return NULL;
-	node* prev = NULL;
 	node* next = NULL;
 	node* curr = head;
 	while (k-- > 0 && curr) {
@@ -20,6 +19,21 @@ node* reverseLinkedList(node* head, int k) {
 	head->next = curr;
 	head = prev;
 	return head;
+}
+node* reverseList(node* head, int k){
+	node* dummy = new node(0);
+	dummy->next = head;
+	node* prev = dummy;
+	node* curr = dummy->next;
+	while(curr){
+		prev->next = helper(curr, prev, k);
+		curr = prev->next;
+		for(int i = 0; i < k && curr; i++){
+			prev = prev->next;
+			curr = curr->next;
+		}
+	}
+	return dummy->next;
 }
 //Q2
 node* reverse(node* head){
