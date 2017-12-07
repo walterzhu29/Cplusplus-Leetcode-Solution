@@ -126,12 +126,42 @@ void treeView(node* root) {
 }
 
 //Q5
-void printKdistance(Node *root, int k) {
+void kDistanceSet(TreeNode* root, int k, vector<int>& result) {
+	if(!root)
+		return;
 	if(!k) {
-		cout<<root->val;
+		result.push_back(root->val);
+		return;
 	}
-	
-	
+	kDistanceSet(root->left, k - 1, result);
+	kDistanceSet(root->right, k - 1, result);
+}
+void printKdistance(TreeNode *root, int k) {
+	if(!root || k <= 0)
+		return;
+	vector<int> fromRoot;
+	kDistanceSet(root, k, fromRoot);
+	if(fromRoot.size() > 0) {
+		for(auto i: fromRoot) {
+			cout<<root->val<<" "<<i<<endl;
+		}
+	}
+	for(int i = 1, j = k - 1; i < k && j > 0; i++, j--) {
+		vector<int> leftSet;
+		vector<int> rightSet;
+		kDistanceSet(root->left, i - 1, leftSet);
+		kDistanceSet(root->right, j - 1, rightSet);
+		//print
+		if(leftSet.size() > 0 && rightSet.size() > 0) {
+			for(auto l: leftSet) {
+				for(auto r: rightSet) {
+					cout<<l<<" "<<r<<endl;
+				}
+			}
+		}
+	}
+	printKdistance(root->left, k);
+	printKdistance(root->right, k);
 }
 
 //Q6
@@ -161,10 +191,82 @@ void printPath(node* root) {
 }
 
 //Q7
+void searchRange(node* root, int k1, int k2) {
+	if(!root)
+		return;
+	searchRange(root->left, k1, k2);
+	if(root->val >= k1 && root->val <= k2)
+		cout<<root->val<<" ";
+	searchRange(root->right, k1, k2);
+}
 
-
-
-
+//Q8
+//the same question on leetcode required solving this in constant space and do not change the structure
+//return the smallest node which val < v
+TreeNode* searchGreater(TreeNode* root, int v) {
+	if (!root)
+		return NULL;
+	TreeNode* lR = searchGreater(root->left, v);
+	TreeNode* rR = searchGreater(root->right, v);
+	TreeNode* result = NULL;
+	if (root->val > v)
+		result = root;
+	if ((lR && result && lR->val > result->val) || !result)
+		result = lR;
+	if ((rR && result && rR->val > result->val) || !result)
+		result = rR;
+	return result;
+}
+//return the greatest node which val > v
+TreeNode* searchSmaller(TreeNode* root, int v) {
+	if (!root)
+		return NULL;
+	TreeNode* lR = searchSmaller(root->left, v);
+	TreeNode* rR = searchSmaller(root->right, v);
+	TreeNode* result = NULL;
+	if (root->val < v)
+		result = root;
+	if ((lR && result && lR->val < result->val) || !result)
+		result = lR;
+	if ((rR && result && rR->val < result->val) || !result)
+		result = rR;
+	return result;
+}
+//find out two nodes
+vector<TreeNode*> helper(TreeNode* root) {
+    vector<TreeNode*> result;
+    if(!root)
+        return result;
+    TreeNode* lR = searchGreater(root->left, root->val);
+    TreeNode* rR = searchSmaller(root->right, root->val);
+    if(lR || rR) {
+        if(lR) {
+            result.push_back(lR);
+            if(!rR)
+                result.push_back(root);
+        }
+        if(rR) {
+            result.push_back(rR);
+            if(!lR)
+                result.push_back(root);
+        }
+        return result;
+    }
+    result = helper(root->left);
+    if(result.size() > 0)
+        return result;
+    return helper(root->right);
+}
+void recoverTree(TreeNode* root) {
+    if(!root)
+        return;
+    vector<TreeNode*> twoNodes = helper(root);
+    if(twoNodes.size() < 2)
+        return;
+    int temp = twoNodes[0]->val;
+    twoNodes[0]->val = twoNodes[1]->val;
+    twoNodes[1]->val = temp;
+}
 
 
 
