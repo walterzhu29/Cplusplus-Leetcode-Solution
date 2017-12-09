@@ -5,28 +5,35 @@ struct TreeNode{
 	TreeNode(int v): val(v), left(NULL), right(NULL) {}
 };
 //Q1
-int findMin(TreeNode* root){
-	if(!root)
-		return INT_MAX;
-	return min(min(findMin(root->left), findMin(root->right)), root->val);
-}
-int findMax(TreeNode* root){
-	if(!root)
-		return INT_MIN;
-	return max(max(findMax(root->left), findMax(root->right)), root->val);
-}
-bool isBST(TreeNode* root){
+bool isBST(TreeNode* root, int& minValue, int& maxValue){
 	if(!root)
 		return true;
 	//in some case a node->val = INT_MIN or INT_MAX
-	if(!root->left && !root->right)
+	if(!root->left && !root->right) {
+		minValue = root->val;
+		maxValue = root->val;
 	    return true;
-	if(!root->left)
-		return root->val < findMin(root->right) && isBST(root->right);
-	if(!root->right)
-		return root->val > findMax(root->left) && isBST(root->left);
-	return root->val < findMin(root->right) && root->val > findMax(root->left) 
-		   && isBST(root->left) && isBST(root->right);
+	}
+	int lminV, lmaxV, rminV, rmaxV; 
+	bool lR = isBST(root->left, lminV, lmaxV);
+	bool rR = isBST(root->right, rminV, rmaxV);
+	bool cR = false;
+	if(!root->left && rR && root->val < rminV) {
+		minValue = root->val;
+		maxValue = rmaxV;
+		cR = true;
+	}
+	else if(!root->right && lR && root->val > lmaxV) {
+		maxValue = root->val;
+		minValue = lminV;
+		cR = true;
+	}
+	else if(lR && rR && root->val < rminV && root->val > lmaxV) {
+		minValue = lminV;
+		maxValue = rmaxV;
+		cR = true;
+	}
+	return cR;
 }
 
 //Q2
@@ -48,7 +55,7 @@ int diameterOfBinaryTree(TreeNode* root, int& depth){
 	int lResult = diameterOfBinaryTree(root->left, lDepth);
 	int rResult = diameterOfBinaryTree(root->right, rDepth);
 	++depth += lDepth > rDepth ? lDepth : rDepth;
-	return max(lDepth + rDepth, max(lResult, rResult));
+	return max(lDepth + rDepth, max(lResult, rResult)) + 1;
 }
 
 //Q4

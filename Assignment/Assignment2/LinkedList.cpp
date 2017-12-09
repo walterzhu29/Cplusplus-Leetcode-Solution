@@ -67,8 +67,11 @@ ListNode* mergeTwoLists(ListNode* l1, ListNode* l2){
 	if(!l1 || !l2)
 		return !l1 ? l2 : l1;
 	ListNode* dummy = new ListNode(0);
+	//I use node* curr to build the new list
+	//every time I pick a node from l1 or l2, let curr->next = this node;
 	ListNode* curr = dummy;
 	while(l1 || l2){
+	//when l1 point to NULL, which mean we only get node form l2 list, otherwise from l1 list
 		if(!l1){
 			curr->next = l2;
 			l2 = l2->next;
@@ -77,6 +80,7 @@ ListNode* mergeTwoLists(ListNode* l1, ListNode* l2){
 			curr->next = l1;
 			l1 = l1->next;
 		}
+	//or we pick a smaller node from l1 and l2
 		else{
 			if(l1->label > l2->label){
 				curr->next = l2;
@@ -87,6 +91,7 @@ ListNode* mergeTwoLists(ListNode* l1, ListNode* l2){
 				l1 = l1->next;
 			}
 		}
+	//curr move to the next position
 		curr = curr->next;
 	}
 	return dummy->next;
@@ -116,24 +121,33 @@ ListNode* removeNthFromEnd(ListNode* head, int n){
 	return dummy->next;
 }
 
-//Q5
-Node* flattenList(Node* head){
+//Q5  
+Node* flattenList(Node* head) {
 	if(!head)
 		return NULL;
 	Node* dummy = new Node(0);
 	Node* builder = dummy;
-	queue<Node*> Q;
-	Q.push(head);
-	while(!Q.empty()){
-		Node* curr = Q.front();
-		Q.pop();
-		while(curr){
-			builder->next = curr;
-			builder = builder->next;
-			if(curr->child)
-				Q.push(curr->child);
-			curr = curr->next;
+	Node* nextLevel = new Node(0);
+	Node* nextLevelBuilder = nextLevel;
+	while(head) {
+		while(head) {
+			if(head->child) {
+				Node* temp = head->child;
+				//apart two level
+				head->child = NULL;
+				while(temp) {
+					nextLevelBuilder->next = temp;
+					nextLevelBuilder = temp;
+					temp = temp->next;
+				}
+			}
+			builder->next = head;
+			builder = head;
+			head = head->next;
 		}
+		head = nextLevel->next;
+		nextLevel->next = NULL;
+		nextLevelBuilder = nextLevel;
 	}
 	return dummy->next;
 }
