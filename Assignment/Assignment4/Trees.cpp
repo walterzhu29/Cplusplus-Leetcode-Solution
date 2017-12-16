@@ -169,20 +169,20 @@ void connect(TreeNode *root) {
 	TreeNode* cBuilder = root;
 	TreeNode* nBuilder = nextLevelDummy;
 	while(cBuilder) {
-		while(cBuilder) {
-			if(cBuilder->left) {
-				nBuilder->next = cBuilder->left;
-				nBuilder = nBuilder->next;
-			}
-			if(cBuilder->right) {
-				nBuilder->next = cBuilder->right;
-				nBuilder = nBuilder->next;
-			}
-			cBuilder = cBuilder->next;
+		if(cBuilder->left) {
+			nBuilder->next = cBuilder->left;
+			nBuilder = nBuilder->next;
 		}
-		cBuilder = nextLevelDummy->next;
-		nBuilder = nextLevelDummy;
-		nBuilder->next = NULL;
+		if(cBuilder->right) {
+			nBuilder->next = cBuilder->right;
+			nBuilder = nBuilder->next;
+		}
+		cBuilder = cBuilder->next;
+		if(!cBuilder) {
+			cBuilder = nextLevelDummy->next;
+			nBuilder = nextLevelDummy;
+			nBuilder->next = NULL;
+		}
 	}
 }
 

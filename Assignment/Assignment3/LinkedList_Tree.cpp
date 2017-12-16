@@ -13,16 +13,12 @@ void helper(node* root) {
 		return;
 	helper(root->left);
 	builder->right = root;
+	root->left = builder;
 	builder = root;
 	helper(root->right);
 }
 node* convertBTtoDLL(node* root) {
 	helper(root);
-	node* move = dummy->right;
-	while(move && move->right) {
-		move->right->left = move;
-		move = move->right;
-	}
 	return dummy->right;
 }
 
@@ -66,15 +62,7 @@ void print2Array(node* root, vector<vector<string>>& result, int depth, int poi)
 	print2Array(root->left, result, depth + 1, poi - 1);
 	print2Array(root->right, result, depth + 1, poi + 1);
 }
-vector<vector<string>> tree22DArray(node* root) {
-	if(!root)
-		return vector<vector<string>>(); 
-	int depth = getDepth(root);
-	int num = depth * 2 - 1;
-	vector<vector<string>> result(depth, vector<string>(num, " "));
-	print2Array(root, result, 0, (num - 1) / 2);
-	return result;
-}
+
 void treeView(node* root) {
 	if(!root)
 		return;
@@ -82,7 +70,13 @@ void treeView(node* root) {
 		cout<<root->val<<endl;
 		return;
 	}
-	vector<vector<string>> tree = tree22DArray(root);
+	
+	//print this tree into a 2D array, which may takes O(D) space (D is the depth of the tree).
+	int depth = getDepth(root);
+	int num = depth * 2 - 1;
+	vector<vector<string>> tree(depth, vector<string>(num, " "));
+	print2Array(root, tree, 0, (num - 1) / 2);
+	
 	//print top view
 	for(int j = 0; j < tree[0].size(); j++) {
 		for(int i = 0; i < tree.size(); i++) {
@@ -140,12 +134,15 @@ void printKdistance(TreeNode *root, int k) {
 	if(!root || k <= 0)
 		return;
 	vector<int> fromRoot;
+	//find out all child nodes which at k distance from current node;
+	//if these child nodes exsit, print em.
 	kDistanceSet(root, k, fromRoot);
 	if(fromRoot.size() > 0) {
 		for(auto i: fromRoot) {
 			cout<<root->val<<" "<<i<<endl;
 		}
 	}
+	//find out all note pairs at k distance and the paths between these pairs go through current node.
 	for(int i = 1, j = k - 1; i < k && j > 0; i++, j--) {
 		vector<int> leftSet;
 		vector<int> rightSet;
@@ -202,66 +199,25 @@ void searchRange(node* root, int k1, int k2) {
 
 //Q8
 //the same question on leetcode required solving this in constant space and do not change the structure
-//return the smallest node which val < v
-TreeNode* searchGreater(TreeNode* root, int v) {
-	if (!root)
-		return NULL;
-	TreeNode* lR = searchGreater(root->left, v);
-	TreeNode* rR = searchGreater(root->right, v);
-	TreeNode* result = NULL;
-	if (root->val > v)
-		result = root;
-	if ((lR && result && lR->val > result->val) || !result)
-		result = lR;
-	if ((rR && result && rR->val > result->val) || !result)
-		result = rR;
-	return result;
-}
-//return the greatest node which val > v
-TreeNode* searchSmaller(TreeNode* root, int v) {
-	if (!root)
-		return NULL;
-	TreeNode* lR = searchSmaller(root->left, v);
-	TreeNode* rR = searchSmaller(root->right, v);
-	TreeNode* result = NULL;
-	if (root->val < v)
-		result = root;
-	if ((lR && result && lR->val < result->val) || !result)
-		result = lR;
-	if ((rR && result && rR->val < result->val) || !result)
-		result = rR;
-	return result;
-}
 //find out two nodes
-vector<TreeNode*> helper(TreeNode* root) {
-    vector<TreeNode*> result;
-    if(!root)
-        return result;
-    TreeNode* lR = searchGreater(root->left, root->val);
-    TreeNode* rR = searchSmaller(root->right, root->val);
-    if(lR || rR) {
-        if(lR) {
-            result.push_back(lR);
-            if(!rR)
-                result.push_back(root);
-        }
-        if(rR) {
-            result.push_back(rR);
-            if(!lR)
-                result.push_back(root);
-        }
-        return result;
-    }
-    result = helper(root->left);
-    if(result.size() > 0)
-        return result;
-    return helper(root->right);
+TreeNode* prev = new TreeNode(INT_MIN);
+void helper(TreeNode* root, vector<TreeNode*>& twoNodes) {
+	if(!root)
+		return;
+	helper(root->left, twoNodes);
+	if(twoNodes[0] == NULL && prev->val > root->val)
+		twoNodes[0] = prev;
+	if(twoNodes[0] != NULL && prev->val > root->val)
+		twoNodes[1] = root;
+	prev = root;
+	helper(root->right, twoNodes);
 }
 void recoverTree(TreeNode* root) {
     if(!root)
         return;
-    vector<TreeNode*> twoNodes = helper(root);
-    if(twoNodes.size() < 2)
+    vector<TreeNode*> twoNodes(2, NULL);
+	helper(root, twoNodes);
+    if(twoNodes[0] == NULL)
         return;
     int temp = twoNodes[0]->val;
     twoNodes[0]->val = twoNodes[1]->val;
